@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Keyboard to MIDI</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <h1>Keyboard to MIDI</h1>
+      <p class="subtitle">Teclado del computador como piano MIDI (rango completo C2–C6).</p>
+
+      <section class="card">
+        <div class="controls">
+          <label for="midi-output">Salida MIDI</label>
+          <select id="midi-output"></select>
+          <button id="refresh" type="button">Actualizar</button>
+        </div>
+
+        <div class="controls inline single-row">
+          <label for="velocity">Velocidad</label>
+          <input id="velocity" type="range" min="1" max="127" value="100" />
+          <span id="velocity-value">100</span>
+        </div>
+
+        <p id="status" class="status" aria-live="polite"></p>
+      </section>
+
+      <section class="card">
+        <h2>Layout fijo (C2–C6)</h2>
+        <div id="keys" class="keys" aria-label="Teclas virtuales"></div>
+        <p class="hint">
+          Toca sin cambiar de rango: <strong>A W S E D F T G Y H U J K O L P ; ' ] \ Z X C V B</strong>.
+          Mantén <strong>Shift</strong> para subir 2 octavas en la misma tecla y cubrir hasta C6.
+        </p>
+      </section>
+    </main>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
