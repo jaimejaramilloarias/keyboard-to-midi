@@ -1,38 +1,24 @@
-const MIN_NOTE = 36; // C2
-const MAX_NOTE = 84; // C6
-const SHIFT_LAYER_SEMITONES = 24; // +2 octavas
-
-const KEYBOARD_LAYOUT = [
-  ['KeyA', 0],
-  ['KeyW', 1],
-  ['KeyS', 2],
-  ['KeyE', 3],
-  ['KeyD', 4],
-  ['KeyF', 5],
-  ['KeyT', 6],
-  ['KeyG', 7],
-  ['KeyY', 8],
-  ['KeyH', 9],
-  ['KeyU', 10],
-  ['KeyJ', 11],
-  ['KeyK', 12],
-  ['KeyO', 13],
-  ['KeyL', 14],
-  ['KeyP', 15],
-  ['Semicolon', 16],
-  ['Quote', 17],
-  ['BracketRight', 18],
-  ['Backslash', 19],
-  ['KeyZ', 20],
-  ['KeyX', 21],
-  ['KeyC', 22],
-  ['KeyV', 23],
-  ['KeyB', 24],
+const NOTE_LAYOUT = [
+  ['KeyA', 0, 'C'],
+  ['KeyW', 1, 'C#'],
+  ['KeyS', 2, 'D'],
+  ['KeyE', 3, 'D#'],
+  ['KeyD', 4, 'E'],
+  ['KeyF', 5, 'F'],
+  ['KeyT', 6, 'F#'],
+  ['KeyG', 7, 'G'],
+  ['KeyY', 8, 'G#'],
+  ['KeyH', 9, 'A'],
+  ['KeyU', 10, 'A#'],
+  ['KeyJ', 11, 'B'],
+  ['KeyK', 12, 'C'],
 ];
 
 const outputSelect = document.getElementById('midi-output');
 const refreshButton = document.getElementById('refresh');
 const statusElement = document.getElementById('status');
+const octaveInput = document.getElementById('octave');
+const octaveValue = document.getElementById('octave-value');
 const velocityInput = document.getElementById('velocity');
 const velocityValue = document.getElementById('velocity-value');
 const keysContainer = document.getElementById('keys');
@@ -45,69 +31,52 @@ function setStatus(message) {
   statusElement.textContent = message;
 }
 
-function midiToName(note) {
-  const names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-  return `${names[note % 12]}${Math.floor(note / 12) - 1}`;
-}
-
-function keyLabelFromCode(code) {
-  const map = { Semicolon: ';', Quote: "'", BracketRight: ']', Backslash: '\\' };
-  return map[code] ?? code.replace('Key', '');
-}
-
-function keyOffsetForCode(code) {
-  const hit = KEYBOARD_LAYOUT.find(([key]) => key === code);
-  return hit ? hit[1] : null;
-}
-
-function noteNumberForEvent(event) {
-  const offset = keyOffsetForCode(event.code);
-  if (offset === null) return null;
-
-  const layerOffset = event.shiftKey ? SHIFT_LAYER_SEMITONES : 0;
-  const note = MIN_NOTE + offset + layerOffset;
-  return note >= MIN_NOTE && note <= MAX_NOTE ? note : null;
-}
-
-function renderKeyMapUI() {
+function buildKeyMapUI() {
   keysContainer.innerHTML = '';
-
-  KEYBOARD_LAYOUT.forEach(([code, offset]) => {
-    const baseNote = MIN_NOTE + offset;
-    const shiftedNote = baseNote + SHIFT_LAYER_SEMITONES;
-
+  NOTE_LAYOUT.forEach(([code, semitone, label]) => {
     const key = document.createElement('div');
     key.className = 'key';
     key.dataset.code = code;
-    key.innerHTML = `
-      <strong>${keyLabelFromCode(code)}</strong>
-      <span class="note">${midiToName(baseNote)}</span>
-      <span class="note alt">Shift: ${midiToName(shiftedNote)}</span>
-    `;
-
+    key.innerHTML = `<strong>${code.replace('Key', '')}</strong><span class="note">${label}${semitone > 11 ? '+' : ''}</span>`;
     keysContainer.appendChild(key);
   });
 }
 
 function setKeyVisual(code, pressed) {
   const keyElement = keysContainer.querySelector(`[data-code="${code}"]`);
-  if (keyElement) keyElement.classList.toggle('active', pressed);
+  if (keyElement) {
+    keyElement.classList.toggle('active', pressed);
+  }
 }
 
-function sendNoteOn(event) {
-  if (!activeOutput || activeNotes.has(event.code)) return;
+function noteNumberForCode(code) {
+  const hit = NOTE_LAYOUT.find((item) => item[0] === code);
+  if (!hit) {
+    return null;
+  }
+  const semitone = hit[1];
+  const octave = Number(octaveInput.value);
+  return octave * 12 + semitone;
+}
 
-  const note = noteNumberForEvent(event);
-  if (note === null) return;
-
-  activeOutput.send([0x90, note, Number(velocityInput.value)]);
-  activeNotes.set(event.code, note);
-  setKeyVisual(event.code, true);
+function sendNoteOn(code) {
+  if (!activeOutput || activeNotes.has(code)) {
+    return;
+  }
+  const note = noteNumberForCode(code);
+  if (note === null) {
+    return;
+  }
+  const velocity = Number(velocityInput.value);
+  activeOutput.send([0x90, note, velocity]);
+  activeNotes.set(code, note);
+  setKeyVisual(code, true);
 }
 
 function sendNoteOff(code) {
-  if (!activeOutput || !activeNotes.has(code)) return;
-
+  if (!activeOutput || !activeNotes.has(code)) {
+    return;
+  }
   const note = activeNotes.get(code);
   activeOutput.send([0x80, note, 0]);
   activeNotes.delete(code);
@@ -159,13 +128,20 @@ refreshButton.addEventListener('click', () => {
   populateOutputs();
 });
 
+octaveInput.addEventListener('input', () => {
+  octaveValue.textContent = octaveInput.value;
+  stopAllNotes();
+});
+
 velocityInput.addEventListener('input', () => {
   velocityValue.textContent = velocityInput.value;
 });
 
 window.addEventListener('keydown', (event) => {
-  if (event.repeat) return;
-  sendNoteOn(event);
+  if (event.repeat) {
+    return;
+  }
+  sendNoteOn(event.code);
 });
 
 window.addEventListener('keyup', (event) => {
@@ -175,11 +151,12 @@ window.addEventListener('keyup', (event) => {
 window.addEventListener('blur', stopAllNotes);
 
 async function init() {
-  renderKeyMapUI();
+  buildKeyMapUI();
+  octaveValue.textContent = octaveInput.value;
   velocityValue.textContent = velocityInput.value;
 
   if (!('requestMIDIAccess' in navigator)) {
-    setStatus('Tu navegador no soporta Web MIDI. Usa Chrome o Edge.');
+    setStatus('Tu navegador no soporta Web MIDI. Usa una versión reciente de Chrome o Edge.');
     outputSelect.disabled = true;
     refreshButton.disabled = true;
     return;

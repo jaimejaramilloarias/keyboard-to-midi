@@ -9,7 +9,7 @@
   <body>
     <main class="app">
       <h1>Keyboard to MIDI</h1>
-      <p class="subtitle">Teclado del computador como piano MIDI (rango completo C2–C6).</p>
+      <p class="subtitle">Toca notas MIDI usando el teclado de tu computador.</p>
 
       <section class="card">
         <div class="controls">
@@ -18,7 +18,10 @@
           <button id="refresh" type="button">Actualizar</button>
         </div>
 
-        <div class="controls inline single-row">
+        <div class="controls inline">
+          <label for="octave">Octava base</label>
+          <input id="octave" type="range" min="1" max="7" value="4" />
+          <span id="octave-value">4</span>
           <label for="velocity">Velocidad</label>
           <input id="velocity" type="range" min="1" max="127" value="100" />
           <span id="velocity-value">100</span>
@@ -28,12 +31,9 @@
       </section>
 
       <section class="card">
-        <h2>Layout fijo (C2–C6)</h2>
+        <h2>Mapa de teclas</h2>
         <div id="keys" class="keys" aria-label="Teclas virtuales"></div>
-        <p class="hint">
-          Toca sin cambiar de rango: <strong>A W S E D F T G Y H U J K O L P ; ' ] \ Z X C V B</strong>.
-          Mantén <strong>Shift</strong> para subir 2 octavas en la misma tecla y cubrir hasta C6.
-        </p>
+        <p class="hint">Usa: A W S E D F T G Y H U J K para tocar notas.</p>
       </section>
     </main>
 

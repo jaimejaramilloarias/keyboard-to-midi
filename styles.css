@@ -12,7 +12,7 @@ body {
 }
 
 .app {
-  max-width: 960px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 2rem 1rem 3rem;
 }
@@ -42,12 +42,8 @@ h1 {
 }
 
 .controls.inline {
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto 1fr auto;
   align-items: center;
-}
-
-.controls.inline.single-row label {
-  min-width: 74px;
 }
 
 select,
@@ -72,7 +68,7 @@ button {
 
 .keys {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
   gap: 0.5rem;
 }
 
@@ -87,12 +83,7 @@ button {
 .key .note {
   display: block;
   font-size: 0.8rem;
-  opacity: 0.85;
-}
-
-.key .note.alt {
-  color: #96a9ff;
-  opacity: 1;
+  opacity: 0.8;
 }
 
 .key.active {
@@ -102,5 +93,11 @@ button {
 
 .hint {
   margin-bottom: 0;
-  opacity: 0.78;
+  opacity: 0.75;
+}
+
+@media (max-width: 720px) {
+  .controls.inline {
+    grid-template-columns: auto 1fr auto;
+  }
 }
