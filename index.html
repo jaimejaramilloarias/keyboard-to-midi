@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Keyboard to MIDI</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <h1>Keyboard to MIDI</h1>
+      <p class="subtitle">Toca notas MIDI usando el teclado de tu computador.</p>
+
+      <section class="card">
+        <div class="controls">
+          <label for="midi-output">Salida MIDI</label>
+          <select id="midi-output"></select>
+          <button id="refresh" type="button">Actualizar</button>
+        </div>
+
+        <div class="controls inline">
+          <label for="octave">Octava base</label>
+          <input id="octave" type="range" min="1" max="7" value="4" />
+          <span id="octave-value">4</span>
+          <label for="velocity">Velocidad</label>
+          <input id="velocity" type="range" min="1" max="127" value="100" />
+          <span id="velocity-value">100</span>
+        </div>
+
+        <p id="status" class="status" aria-live="polite"></p>
+      </section>
+
+      <section class="card">
+        <h2>Mapa de teclas</h2>
+        <div id="keys" class="keys" aria-label="Teclas virtuales"></div>
+        <p class="hint">Usa: A W S E D F T G Y H U J K para tocar notas.</p>
+      </section>
+    </main>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
